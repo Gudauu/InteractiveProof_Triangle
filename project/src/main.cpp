@@ -47,7 +47,8 @@ private:
         return A[a][b];
     }
     int F(const vector<int>& xy) {
-        vector<int> w = vector<int>(k, 0);
+        int fNv = k + k; // F(X, Y) so fNv = 2 * k
+        vector<int> w = vector<int>(fNv, 0);
         int res = 0;
         while(true) {
             // IC(w);
@@ -56,19 +57,20 @@ private:
                 res = (res % P);
             }
             bool found = false;
-            int fNv = k + k; // F(X, Y) so fNv = 2 * k
-            for(int i = fNv-1; i >= 0; i--) 
+            for(int i = fNv-1; i >= 0; i--)
                 if (w[i] == 0) {
                     found = true;
                     w[i] = 1;
-                    for(int j = i+1; j < fNv; j++) 
+                    for(int j = i+1; j < fNv; j++) {
+                        // IC(w, i, j);
                         w[j] = 0;
+                    }
                     break;
                 }  
             if (!found) 
                 break;
         }
-        IC(k, w, res);
+        IC(xy, w, res);
         return res;
     }
     int g(const vector<int>& xyz) {
@@ -78,14 +80,14 @@ private:
         if (res == 0)
             return 0;
         std::copy(xyz.begin() + fNv, xyz.end(), X.begin() + k);
-        IC(xyz, X);
+        // IC(xyz, X);
         int r = F(X) % P;
         if (r == 0) {
             return 0;
         }
         res = (res * r) % P;
         std::copy(xyz.begin() + k, xyz.end() + fNv, X.begin());
-        IC(xyz, X);
+        // IC(xyz, X);
         r = F(X) % P;
         if (r == 0) {
             return 0;
@@ -97,7 +99,7 @@ private:
         int gNv = k + k + k, res = 0, rlen = xyz.size();
         vector<int> X = vector<int>(gNv, 0);
         std::copy(xyz.begin(), xyz.end(), X.begin());
-        IC("eval_g: ", xyz, X);
+        // IC("eval_g: ", xyz, X);
         while(true) {
             res = res + g(X);
             res = (res % P);
@@ -111,7 +113,7 @@ private:
                     break;
                 }
             }
-            IC(X);
+            // IC(X);
             if (!found)
                 break; 
         }
@@ -194,7 +196,8 @@ private:
         return A[a][b];
     }
     int F(const vector<int>& xy) {
-        vector<int> w = vector<int>(k, 0);
+        int fNv = k + k; // F(X, Y) so fNv = 2 * k
+        vector<int> w = vector<int>(fNv, 0);
         int res = 0;
         while(true) {
             if (f(w)) {
@@ -202,7 +205,6 @@ private:
                 res = (res % P);
             }
             bool found = false;
-            int fNv = k + k; // F(X, Y) so fNv = 2 * k
             for(int i = fNv-1; i >= 0; i--) 
                 if (w[i] == 0) {
                     found = true;

@@ -51,7 +51,6 @@ private:
         vector<int> w = vector<int>(fNv, 0);
         int res = 0;
         while(true) {
-            // IC(w);
             if (f(w)) {
                 res = res + compute_delta(w,xy);
                 res = (res % P);
@@ -61,16 +60,15 @@ private:
                 if (w[i] == 0) {
                     found = true;
                     w[i] = 1;
-                    for(int j = i+1; j < fNv; j++) {
-                        // IC(w, i, j);
+                    for(int j = i+1; j < fNv; j++)
                         w[j] = 0;
-                    }
+                    
                     break;
                 }  
             if (!found) 
                 break;
         }
-        IC(xy, w, res);
+        // IC(xy, w, res);
         return res;
     }
     int g(const vector<int>& xyz) {
@@ -80,14 +78,12 @@ private:
         if (res == 0)
             return 0;
         std::copy(xyz.begin() + fNv, xyz.end(), X.begin() + k);
-        // IC(xyz, X);
         int r = F(X) % P;
         if (r == 0) {
             return 0;
         }
         res = (res * r) % P;
-        std::copy(xyz.begin() + k, xyz.end() + fNv, X.begin());
-        // IC(xyz, X);
+        std::copy(xyz.begin() + k, xyz.end(), X.begin());
         r = F(X) % P;
         if (r == 0) {
             return 0;
@@ -99,7 +95,6 @@ private:
         int gNv = k + k + k, res = 0, rlen = xyz.size();
         vector<int> X = vector<int>(gNv, 0);
         std::copy(xyz.begin(), xyz.end(), X.begin());
-        // IC("eval_g: ", xyz, X);
         while(true) {
             res = res + g(X);
             res = (res % P);
@@ -230,7 +225,7 @@ private:
             return 0;
         }
         res = (res * r) % P;
-        std::copy(xyz.begin() + k, xyz.end() + fNv, X.begin());
+        std::copy(xyz.begin() + k, xyz.end(), X.begin());
         r = F(X) % P;
         if (r == 0) {
             return 0;

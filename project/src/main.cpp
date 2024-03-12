@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <format>
 
 using std::string;
 using std::vector;
@@ -139,9 +140,14 @@ public:
 
 class Verifier{
 private:
+    vector<vector<int>> A;
+    int Ng;
     int k;
     int G_last;  // value of G_i from last round (with self-chosen random value)
     vector<int> r;
+    void log(const string& msg){
+        std::cout << "Verifier " << msg << "\n";
+    }
     int randValue(const int& low, const int& high){
         std::random_device rd; // obtain a random number from hardware
         std::mt19937 gen(rd()); // seed the generator
@@ -249,8 +255,11 @@ private:
     }
 
 public:
-    Verifier(const int& k_){
+    Verifier(vector<vector<int>> A_, int Ng_, int k_){
+        A = A_;
+        Ng = Ng_;
         k = k_;
+        r = {};
     }
     vector<int> Receive(const vector<int>& message){
         // message: round flag, {G (first round); gi(0), gi(1), gi(2) (other rounds)}
@@ -266,11 +275,15 @@ public:
             // check if match last round: return negative round_flag to indicate a failure
             if(((g0 + g1) % P) != G_last)
                 return {-round_flag};
+            log("round " + std::to_string(round_flag) + ": " + std::to_string(g0) + " + " + std::to_string(g1) + " %= " + std::to_string(G_last));
             // check if last round; if so, use oracle access to check G(r)
             G_last = LagrangeEval(r_new, message[1], message[2], message[3]);
             if(round_flag == k + k + k){
-                if(oracle() == G_last)
+                int G_oracle = oracle();
+                if(G_oracle == G_last){
+                    log("round " + std::to_string(round_flag) + ": Oracle value matches at: " + std::to_string(G_oracle));
                     return {0}; 
+                }
                 return {-round_flag};
             }
         }
@@ -289,17 +302,13 @@ private:
     void checkA() {
         for (int a = 0; a < Ng; a++) {
             if (A[a][a] == 1)
-                mexit("checkA error1");
+                mexit("checkA error1: 1 on diagonal");
             for (int b = 0; b < a; b++) 
                 if (A[a][b] != A[b][a])
-                    mexit("checkA error2");
+                    mexit("checkA error2: transpose not equal");
         }
         std::cout << "A OK\n";
     }
-public:
-    int Ng;  // size of graph (number of nodes) 
-    int k;  // length of binary representation of one node (2^k = Ng)
-    vector<vector<int>> A;
     bool setA(vector<vector<int>> matrix){
         // validity check?
         A = matrix;
@@ -308,16 +317,36 @@ public:
     void setSize(){
         Ng = A.size();
     }
-    void triangle(){
+    void checkVerifierMsg(const vector<int>& msg){
+        // msg: round flag, the new chosen value.
+        if(msg[0] < 0)
+            mexit("Verifier: values fail to match");
+        if(msg[0] == 0)
+            mexit("End of protocol.");
+        std::cout << "Round " << msg[0] << ": chose new random value " << msg[1] << ".\n";
+
+    }
+public:
+    int Ng;  // size of graph (number of nodes) 
+    int k;  // length of binary representation of one node (2^k = Ng)
+    vector<vector<int>> A;
+    
+    
+    void triangle(vector<vector<int>> A_){
+        // set up
+        A = A_;
+        checkA();
+        setSize();
+
         Prover prover = Prover(A, Ng, k);
-        Verifier verifier = Verifier();
-        // initial message to verifier
-        verifier.Receive();
-        // start 3k round of interactive proof
-        vector<int> message;
-        for(int round = 0;round < k+k+k;round++){
-            message = prover.Receive();
-            message = verifier.Receive();
+        Verifier verifier = Verifier(A, Ng, k);
+        // start 3k + 1 round of interactive proof
+        vector<int> message = {0}; // initial message
+        for(int round = 0;round <= k+k+k;round++){
+            message = prover.Receive(message);
+            message = verifier.Receive(message);
+            // check message from verifier
+            checkVerifierMsg(message);
         } 
     }
 
@@ -325,5 +354,5 @@ public:
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Hello world!" << std::endl;
+    
 }

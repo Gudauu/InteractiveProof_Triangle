@@ -6,6 +6,7 @@
         "*.rmd": "markdown",
         "cstdint": "cpp",
         "iostream": "cpp",
-        "craft": "c"
+        "craft": "c",
+        "format": "cpp"
     }
 }

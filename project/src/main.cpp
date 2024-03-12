@@ -49,11 +49,11 @@ private:
     int F(const vector<int>& xy) {
         int fNv = k + k; // F(X, Y) so fNv = 2 * k
         vector<int> w = vector<int>(fNv, 0);
-        int res = 0;
+        long long res = 0;
         while(true) {
             if (f(w)) {
                 res = res + compute_delta(w,xy);
-                res = (res % P);
+                res = (res % P + P) % P;
             }
             bool found = false;
             for(int i = fNv-1; i >= 0; i--)
@@ -69,10 +69,11 @@ private:
                 break;
         }
         // IC(xy, w, res);
-        return res;
+        return int(res);
     }
     int g(const vector<int>& xyz) {
-        int fNv = k + k, res = 0;
+        int fNv = k + k;
+        long long res = 0;
         vector<int> X(xyz.begin(), xyz.begin() + fNv);
         res = F(X) % P;
         if (res == 0)
@@ -89,10 +90,11 @@ private:
             return 0;
         }
         res = (res * r) % P;
-        return res;
+        return int(res);
     }
     int eval_g(const vector<int>& xyz) {
-        int gNv = k + k + k, res = 0, rlen = xyz.size();
+        int gNv = k + k + k, rlen = xyz.size();
+        long long res = 0;
         vector<int> X = vector<int>(gNv, 0);
         std::copy(xyz.begin(), xyz.end(), X.begin());
         while(true) {
@@ -108,11 +110,10 @@ private:
                     break;
                 }
             }
-            // IC(X);
             if (!found)
                 break; 
         }
-        return res;
+        return int(res);
     }
 public:
     Prover(vector<vector<int>> A_, int Ng_, int k_){
@@ -122,14 +123,15 @@ public:
         r = {};
     }
     vector<int> Receive(const vector<int>& message){
-        // message: round flag, the new chosen value from Verifier(empty at first round).
+        // message: round flag, the new chosen value from Verifier(empty at 0 and 1st round).
         // res: round flag, {G (first round); gi(0), gi(1), gi(2) (other rounds)}
         int round_flag = message[0];
         // compute G and return 
         if(round_flag == 0)
             return {round_flag, eval_g({})};
         // add the new chosen value to r
-        r.push_back(message[1]);
+        if(round_flag > 1)
+            r.push_back(message[1]);
         // compute gi at 0, 1, 2
         vector<int> res = {round_flag};
         for(int i = 0;i < 3;i++){
@@ -152,14 +154,15 @@ private:
         std::cout << "Verifier " << msg << "\n";
     }
     int randValue(const int& low, const int& high){
-        std::random_device rd; // obtain a random number from hardware
-        std::mt19937 gen(rd()); // seed the generator
-        std::uniform_int_distribution<> distr(low, high); // define the range
-        return distr(gen);
+        // std::random_device rd; // obtain a random number from hardware
+        // std::mt19937 gen(rd()); // seed the generator
+        // std::uniform_int_distribution<> distr(low, high); // define the range
+        // return distr(gen);
+        return 20;
     }
     inline int LagrangeEval(const int& r_new, const int& g0, const int& g1, const int& g2){
-        int res = int(0.5*g0*(r_new-1)*(r_new-2))%P - int(g1*r_new*(r_new-2))%P + int(0.5*g2*r_new*(r_new-1))%P;
-        return (res % P + P) % P;
+        long res = long(g0*(r_new-1)*(r_new-2) >> 1)%P - long(g1*r_new*(r_new-2))%P + long(g2*r_new*(r_new-1) >> 1)%P;
+        return (int(res % P) + P) % P;
     }
     int oracle(){
         return eval_g(r);
@@ -241,7 +244,7 @@ private:
 
         while(true) {
             res = res + g(X);
-            res = (res % P);
+            res = (res % P + P) % P;
             bool found = false;
             for(int i = gNv-1; i > rlen-1; i--) {
                 if (X[i] == 0) {
@@ -267,32 +270,32 @@ public:
     }
     vector<int> Receive(const vector<int>& message){
         // message: round flag, {G (first round); gi(0), gi(1), gi(2) (other rounds)}
-        // res: round flag, the new chosen value.
-        int round_flag = message[0], r_new = randValue(round_flag, P);
-        r.push_back(r_new);
+        // res: round flag, the new chosen value(empty at 0 round). 
+        int round_flag = message[0];
         if(round_flag == 0){
             G_last = message[1];  
             log("round " + std::to_string(round_flag) + ": G = " + std::to_string(G_last) + ", G/6 = " + std::to_string(G_last / 6));
+            return {++round_flag};
         }      
-        else{
-            // check if new evaluation match previous
-            int g0 = LagrangeEval(0, message[1], message[2], message[3]);
-            int g1 = LagrangeEval(1, message[1], message[2], message[3]);
-            // check if match last round: return negative round_flag to indicate a failure
-            if(((g0 + g1) % P) != G_last)
-                return {-round_flag, G_last, (g0 + g1) % P};
-            log("round " + std::to_string(round_flag) + ": " + std::to_string(g0) + " + " + std::to_string(g1) + " %= " + std::to_string(G_last));
-            // check if last round; if so, use oracle access to check G(r)
-            G_last = LagrangeEval(r_new, message[1], message[2], message[3]);
-            if(round_flag == k + k + k){
-                int G_oracle = oracle();
-                if(G_oracle == G_last){
-                    log("round " + std::to_string(round_flag) + ": Oracle value matches at: " + std::to_string(G_oracle));
-                    return {0}; 
-                }
-                return {-round_flag, G_last, G_oracle};
+        int r_new = randValue(round_flag, P);
+        r.push_back(r_new);
+        // check if new evaluation match previous
+        int g0 = message[1], g1 = message[2];
+        // check if match last round: return negative round_flag to indicate a failure
+        if(((g0 + g1) % P) != G_last)
+            return {-round_flag, G_last, g0, g1};
+        log("round " + std::to_string(round_flag) + ": " + std::to_string(g0) + " + " + std::to_string(g1) + " %= " + std::to_string(G_last));
+        // check if last round; if so, use oracle access to check G(r)
+        G_last = LagrangeEval(r_new, message[1], message[2], message[3]);
+        if(round_flag == k + k + k){
+            int G_oracle = oracle();
+            if(G_oracle == G_last){
+                log("round " + std::to_string(round_flag) + ": Oracle value matches at: " + std::to_string(G_oracle));
+                return {0}; 
             }
+            return {-round_flag, G_oracle, G_last};
         }
+        
         return {++round_flag, r_new};
     }
 };
@@ -326,11 +329,15 @@ private:
     }
     void checkVerifierMsg(const vector<int>& msg){
         // msg: round flag, the new chosen value.
-        if(msg[0] < 0)
-            mexit("Verifier: values fail to match. Supposed to be " + std::to_string(msg[1]) + ", got " + std::to_string(msg[2]) + ".");
+        if(msg[0] < 0){
+            if(msg.size() == 3) // oracle fail
+                mexit("Verifier: values fail to match. Supposed to be " + std::to_string(msg[1]) + ", got " + std::to_string(msg[2]) + ".");
+            else
+                mexit("Verifier: values fail to match. Supposed to be " + std::to_string(msg[1]) + ", got " + std::to_string(msg[2]) + " + " + std::to_string(msg[3]) + ".");
+        }
         if(msg[0] == 0)
             mexit("End of protocol.");
-        std::cout << "Round " << msg[0] << ": chose new random value " << msg[1] << ".\n";
+        std::cout << "Round " << msg[0]-1 << ": chose new random value " << msg[1] << ".\n";
 
     }
 
@@ -348,9 +355,12 @@ public:
 
         Prover prover = Prover(A, Ng, k);
         Verifier verifier = Verifier(A, Ng, k);
-        // start 3k + 1 round of interactive proof
+        // round 0: give G
         vector<int> message = {0}; // initial message
-        for(int round = 0;round <= k+k+k;round++){
+        message = prover.Receive(message); // {0, G}
+        message = verifier.Receive(message);  // {1}
+        // start 3k round of interactive proof
+        for(int round = 1;round <= k+k+k;round++){
             message = prover.Receive(message);
             message = verifier.Receive(message);
             // check message from verifier

@@ -1,0 +1,13 @@
+A OK
+Verifier round 0: G = 12, G/6 = 2
+Verifier round 1: 6 + 6 %= 12
+Round 2: chose new random value 64.
+Verifier round 2: 516227 + 2 %= 516229
+Round 3: chose new random value 64.
+Verifier round 3: 221539 + 261987 %= 483526
+Round 4: chose new random value 64.
+Verifier round 4: 458383 + 520192 %= 454288
+Round 5: chose new random value 64.
+Verifier round 5: 336170 + 496182 %= 308065
+Round 6: chose new random value 64.
+***Verifier: values fail to match. Supposed to be 237397, got 339188 + 216652.

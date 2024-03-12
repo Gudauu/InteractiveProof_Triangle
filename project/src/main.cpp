@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <random>
-#include <format>
+#include <icecream.hpp>
 
 using std::string;
 using std::vector;
@@ -20,7 +20,7 @@ private:
     vector<int> r;  // record all the chosen value by verifier
     int compute_delta(const vector<int>& w, const vector<int>& xy) {
         int res = 1, fNv = k + k;
-        for(int i = 0; i < k; i++)
+        for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
                 res = res * xy[i];
             else
@@ -43,12 +43,14 @@ private:
             a = 16*xy[0]+8*xy[1]+4*xy[2]+2*xy[3]+xy[4];
             b = 16*xy[5]+8*xy[6]+4*xy[7]+2*xy[8]+xy[9];
         }
+        // IC(xy, a, b);
         return A[a][b];
     }
     int F(const vector<int>& xy) {
         vector<int> w = vector<int>(k, 0);
         int res = 0;
         while(true) {
+            // IC(w);
             if (f(w)) {
                 res = res + compute_delta(w,xy);
                 res = (res % P);
@@ -66,21 +68,24 @@ private:
             if (!found) 
                 break;
         }
+        IC(k, w, res);
         return res;
     }
     int g(const vector<int>& xyz) {
         int fNv = k + k, res = 0;
-        vector<int> X = xyz;
+        vector<int> X(xyz.begin(), xyz.begin() + fNv);
         res = F(X) % P;
         if (res == 0)
             return 0;
-        std::copy(xyz.begin() + fNv, xyz.end() + fNv, X.begin() + k);
+        std::copy(xyz.begin() + fNv, xyz.end(), X.begin() + k);
+        IC(xyz, X);
         int r = F(X) % P;
         if (r == 0) {
             return 0;
         }
         res = (res * r) % P;
         std::copy(xyz.begin() + k, xyz.end() + fNv, X.begin());
+        IC(xyz, X);
         r = F(X) % P;
         if (r == 0) {
             return 0;
@@ -92,7 +97,7 @@ private:
         int gNv = k + k + k, res = 0, rlen = xyz.size();
         vector<int> X = vector<int>(gNv, 0);
         std::copy(xyz.begin(), xyz.end(), X.begin());
-
+        IC("eval_g: ", xyz, X);
         while(true) {
             res = res + g(X);
             res = (res % P);
@@ -106,6 +111,7 @@ private:
                     break;
                 }
             }
+            IC(X);
             if (!found)
                 break; 
         }
@@ -162,7 +168,7 @@ private:
     }
     int compute_delta(const vector<int>& w, const vector<int>& xy) {
         int res = 1, fNv = k + k;
-        for(int i = 0; i < k; i++)
+        for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
                 res = res * xy[i];
             else
@@ -266,8 +272,10 @@ public:
         // res: round flag, the new chosen value.
         int round_flag = message[0], r_new = randValue(round_flag, P);
         r.push_back(r_new);
-        if(round_flag == 0)
-            G_last = message[1];        
+        if(round_flag == 0){
+            G_last = message[1];  
+            log("round " + std::to_string(round_flag) + ": G = " + std::to_string(G_last) + ", G/6 = " + std::to_string(G_last / 6));
+        }      
         else{
             // check if new evaluation match previous
             int g0 = LagrangeEval(0, message[1], message[2], message[3]);
@@ -316,6 +324,7 @@ private:
     }
     void setSize(){
         Ng = A.size();
+        k = int(log2(Ng));
     }
     void checkVerifierMsg(const vector<int>& msg){
         // msg: round flag, the new chosen value.
@@ -326,6 +335,7 @@ private:
         std::cout << "Round " << msg[0] << ": chose new random value " << msg[1] << ".\n";
 
     }
+
 public:
     int Ng;  // size of graph (number of nodes) 
     int k;  // length of binary representation of one node (2^k = Ng)
@@ -354,5 +364,9 @@ public:
 
 int main(int argc, char *argv[])
 {
-    
+    vector<vector<int>> A = vector<vector<int>>(4, vector<int>(4, 0));
+    // square, G = 0
+    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = 1;
+    IP ip = IP();
+    ip.triangle(A);
 }

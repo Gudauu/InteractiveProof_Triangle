@@ -97,7 +97,7 @@ private:
         std::copy(xyz.begin(), xyz.end(), X.begin());
         while(true) {
             res = res + g(X);
-            res = (res % P);
+            res = (res % P + P) % P;
             bool found = false;
             for(int i = gNv-1; i > rlen-1; i--) {
                 if (X[i] == 0) {
@@ -158,7 +158,8 @@ private:
         return distr(gen);
     }
     inline int LagrangeEval(const int& r_new, const int& g0, const int& g1, const int& g2){
-        return int(0.5*g0*(r_new-1)*(r_new-2))%P - int(g1*r_new*(r_new-2))%P + int(0.5*g2*r_new*(r_new-1))%P;
+        int res = int(0.5*g0*(r_new-1)*(r_new-2))%P - int(g1*r_new*(r_new-2))%P + int(0.5*g2*r_new*(r_new-1))%P;
+        return (res % P + P) % P;
     }
     int oracle(){
         return eval_g(r);
@@ -279,7 +280,7 @@ public:
             int g1 = LagrangeEval(1, message[1], message[2], message[3]);
             // check if match last round: return negative round_flag to indicate a failure
             if(((g0 + g1) % P) != G_last)
-                return {-round_flag};
+                return {-round_flag, G_last, (g0 + g1) % P};
             log("round " + std::to_string(round_flag) + ": " + std::to_string(g0) + " + " + std::to_string(g1) + " %= " + std::to_string(G_last));
             // check if last round; if so, use oracle access to check G(r)
             G_last = LagrangeEval(r_new, message[1], message[2], message[3]);
@@ -289,7 +290,7 @@ public:
                     log("round " + std::to_string(round_flag) + ": Oracle value matches at: " + std::to_string(G_oracle));
                     return {0}; 
                 }
-                return {-round_flag};
+                return {-round_flag, G_last, G_oracle};
             }
         }
         return {++round_flag, r_new};
@@ -326,7 +327,7 @@ private:
     void checkVerifierMsg(const vector<int>& msg){
         // msg: round flag, the new chosen value.
         if(msg[0] < 0)
-            mexit("Verifier: values fail to match");
+            mexit("Verifier: values fail to match. Supposed to be " + std::to_string(msg[1]) + ", got " + std::to_string(msg[2]) + ".");
         if(msg[0] == 0)
             mexit("End of protocol.");
         std::cout << "Round " << msg[0] << ": chose new random value " << msg[1] << ".\n";
@@ -363,7 +364,9 @@ int main(int argc, char *argv[])
 {
     vector<vector<int>> A = vector<vector<int>>(4, vector<int>(4, 0));
     // square, G = 0
-    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = 1;
+    // A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = 1;
+    // diagonal, G = 2
+    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = A[0][2] = A[2][0] = 1;
     IP ip = IP();
     ip.triangle(A);
 }

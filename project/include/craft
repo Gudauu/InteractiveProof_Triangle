@@ -1,13 +1,33 @@
 A OK
 Verifier round 0: G = 12, G/6 = 2
 Verifier round 1: 6 + 6 %= 12
-Round 2: chose new random value 64.
-Verifier round 2: 516227 + 2 %= 516229
-Round 3: chose new random value 64.
-Verifier round 3: 221539 + 261987 %= 483526
-Round 4: chose new random value 64.
-Verifier round 4: 458383 + 520192 %= 454288
-Round 5: chose new random value 64.
-Verifier round 5: 336170 + 496182 %= 308065
-Round 6: chose new random value 64.
-***Verifier: values fail to match. Supposed to be 237397, got 339188 + 216652.
+Round 1: chose new random value 97.
+Verifier round 2: 2 + 505667 %= 505669
+Round 2: chose new random value 97.
+***Verifier: values fail to match. Supposed to be 369973, got 163871 + 202006.
+
+A OK
+Verifier round 0: G = 12, G/6 = 2
+Verifier round 1: 6 + 6 %= 12
+Round 1: chose new random value 17.
+Verifier round 2: 2 + 523747 %= 523749
+Round 2: chose new random value 17.
+Verifier round 3: 454690 + 435616 %= 366019
+Round 3: chose new random value 17.
+Verifier round 4: 524032 + 509643 %= 509388
+Round 4: chose new random value 17.
+Verifier round 5: 509838 + 454122 %= 439673
+Round 5: chose new random value 17.
+Verifier round 6: 20329 + 242861 %= 263190
+Verifier round 6: Oracle value matches at: 230339
+***End of protocol.
+
+
+
+
+A OK
+Verifier round 0: G = 12, G/6 = 2
+Verifier round 1: 6 + 6 %= 12
+Round 1: chose new random value 97.
+Verifier round 2: 505667 + 2 %= 505669
+Round 2: chose new random value 20.

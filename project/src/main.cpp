@@ -19,14 +19,14 @@ private:
     int k;
     vector<int> r;  // record all the chosen value by verifier
     int compute_delta(const vector<int>& w, const vector<int>& xy) {
-        int res = 1, fNv = k + k;
+        long long res = 1, fNv = k + k;
         for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
                 res = res * xy[i];
             else
                 res = res * (1-xy[i]);
-        res = res % P;
-        return res;
+        res = (res % P + P) % P;
+        return int(res);
     }
     int f(const vector<int>& xy) {
         int a, b; 
@@ -139,6 +139,7 @@ public:
             res.push_back(eval_g(r));
             r.pop_back();
         }
+        IC(res);
         return res;
     }
 };
@@ -158,24 +159,24 @@ private:
         // std::mt19937 gen(rd()); // seed the generator
         // std::uniform_int_distribution<> distr(low, high); // define the range
         // return distr(gen);
-        return 20;
+        return 70000;
     }
     inline int LagrangeEval(const int& r_new, const int& g0, const int& g1, const int& g2){
-        long res = long(g0*(r_new-1)*(r_new-2) >> 1)%P - long(g1*r_new*(r_new-2))%P + long(g2*r_new*(r_new-1) >> 1)%P;
-        return (int(res % P) + P) % P;
+        long res = (long(g0)*(r_new-1)*(r_new-2) >> 1)%P - (long(g1)*r_new*(r_new-2))%P + (long(g2)*r_new*(r_new-1) >> 1)%P;
+        return int(res % P + P) % P;
     }
     int oracle(){
         return eval_g(r);
     }
     int compute_delta(const vector<int>& w, const vector<int>& xy) {
-        int res = 1, fNv = k + k;
+        long long res = 1, fNv = k + k;
         for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
                 res = res * xy[i];
             else
                 res = res * (1-xy[i]);
-        res = res % P;
-        return res;
+        res = (res % P + P) % P;
+        return int(res);
     }
     int f(const vector<int>& xy) {
         int a, b; 
@@ -192,38 +193,42 @@ private:
             a = 16*xy[0]+8*xy[1]+4*xy[2]+2*xy[3]+xy[4];
             b = 16*xy[5]+8*xy[6]+4*xy[7]+2*xy[8]+xy[9];
         }
+        // IC(xy, a, b);
         return A[a][b];
     }
     int F(const vector<int>& xy) {
         int fNv = k + k; // F(X, Y) so fNv = 2 * k
         vector<int> w = vector<int>(fNv, 0);
-        int res = 0;
+        long long res = 0;
         while(true) {
             if (f(w)) {
                 res = res + compute_delta(w,xy);
-                res = (res % P);
+                res = (res % P + P) % P;
             }
             bool found = false;
-            for(int i = fNv-1; i >= 0; i--) 
+            for(int i = fNv-1; i >= 0; i--)
                 if (w[i] == 0) {
                     found = true;
                     w[i] = 1;
-                    for(int j = i+1; j < fNv; j++) 
+                    for(int j = i+1; j < fNv; j++)
                         w[j] = 0;
+                    
                     break;
                 }  
             if (!found) 
                 break;
         }
-        return res;
+        // IC(xy, w, res);
+        return int(res);
     }
     int g(const vector<int>& xyz) {
-        int fNv = k + k, res = 0;
-        vector<int> X = xyz;
+        int fNv = k + k;
+        long long res = 0;
+        vector<int> X(xyz.begin(), xyz.begin() + fNv);
         res = F(X) % P;
         if (res == 0)
             return 0;
-        std::copy(xyz.begin() + fNv, xyz.end() + fNv, X.begin() + k);
+        std::copy(xyz.begin() + fNv, xyz.end(), X.begin() + k);
         int r = F(X) % P;
         if (r == 0) {
             return 0;
@@ -235,13 +240,13 @@ private:
             return 0;
         }
         res = (res * r) % P;
-        return res;
+        return int(res);
     }
     int eval_g(const vector<int>& xyz) {
-        int gNv = k + k + k, res = 0, rlen = xyz.size();
+        int gNv = k + k + k, rlen = xyz.size();
+        long long res = 0;
         vector<int> X = vector<int>(gNv, 0);
         std::copy(xyz.begin(), xyz.end(), X.begin());
-
         while(true) {
             res = res + g(X);
             res = (res % P + P) % P;
@@ -258,7 +263,7 @@ private:
             if (!found)
                 break; 
         }
-        return res;
+        return int(res);
     }
 
 public:
@@ -376,7 +381,7 @@ int main(int argc, char *argv[])
     // square, G = 0
     // A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = 1;
     // diagonal, G = 2
-    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = A[0][2] = A[2][0] = 1;
+    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = A[1][3] = A[3][1] = 1;
     IP ip = IP();
     ip.triangle(A);
 }

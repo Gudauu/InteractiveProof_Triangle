@@ -2,14 +2,12 @@
 #include <vector>
 #include <string>
 #include <random>
-#include <icecream.hpp>
 
 using std::string;
 using std::vector;
 
 
 #define P (524287)
-
 
 
 class Prover{
@@ -43,7 +41,6 @@ private:
             a = 16*xy[0]+8*xy[1]+4*xy[2]+2*xy[3]+xy[4];
             b = 16*xy[5]+8*xy[6]+4*xy[7]+2*xy[8]+xy[9];
         }
-        // IC(xy, a, b);
         return A[a][b];
     }
     int F(const vector<int>& xy) {
@@ -68,7 +65,6 @@ private:
             if (!found) 
                 break;
         }
-        // IC(xy, w, res);
         return int(res);
     }
     int g(const vector<int>& xyz) {
@@ -191,7 +187,6 @@ private:
             a = 16*xy[0]+8*xy[1]+4*xy[2]+2*xy[3]+xy[4];
             b = 16*xy[5]+8*xy[6]+4*xy[7]+2*xy[8]+xy[9];
         }
-        // IC(xy, a, b);
         return A[a][b];
     }
     int F(const vector<int>& xy) {
@@ -216,7 +211,6 @@ private:
             if (!found) 
                 break;
         }
-        // IC(xy, w, res);
         return int(res);
     }
     int g(const vector<int>& xyz) {
@@ -325,7 +319,6 @@ private:
         std::cout << "A OK\n";
     }
     bool setA(vector<vector<int>> matrix){
-        // validity check?
         A = matrix;
         return true;
     }

@@ -1,33 +1,33 @@
 A OK
-Verifier round 0: G = 12, G/6 = 2
-Verifier round 1: 6 + 6 %= 12
-Round 1: chose new random value 97.
-Verifier round 2: 2 + 505667 %= 505669
-Round 2: chose new random value 97.
-***Verifier: values fail to match. Supposed to be 369973, got 163871 + 202006.
-
-A OK
-Verifier round 0: G = 12, G/6 = 2
-Verifier round 1: 6 + 6 %= 12
-Round 1: chose new random value 17.
-Verifier round 2: 2 + 523747 %= 523749
-Round 2: chose new random value 17.
-Verifier round 3: 454690 + 435616 %= 366019
-Round 3: chose new random value 17.
-Verifier round 4: 524032 + 509643 %= 509388
-Round 4: chose new random value 17.
-Verifier round 5: 509838 + 454122 %= 439673
-Round 5: chose new random value 17.
-Verifier round 6: 20329 + 242861 %= 263190
-Verifier round 6: Oracle value matches at: 230339
+Verifier round 0: G = 29760, G/6 = 4960
+Verifier round 1: 14880 + 14880 %= 29760
+Round 1: chose new random value 102645.
+Verifier round 2: 236757 + 236757 %= 473514
+Round 2: chose new random value 137722.
+Verifier round 3: 149301 + 149301 %= 298602
+Round 3: chose new random value 280626.
+Verifier round 4: 280121 + 280121 %= 35955
+Round 4: chose new random value 116577.
+Verifier round 5: 177842 + 177842 %= 355684
+Round 5: chose new random value 461557.
+Verifier round 6: 448609 + 452471 %= 376793
+Round 6: chose new random value 175967.
+Verifier round 7: 392305 + 428774 %= 296792
+Round 7: chose new random value 80399.
+Verifier round 8: 374334 + 95761 %= 470095
+Round 8: chose new random value 194037.
+Verifier round 9: 368448 + 321827 %= 165988
+Round 9: chose new random value 239834.
+Verifier round 10: 74837 + 387512 %= 462349
+Round 10: chose new random value 119141.
+Verifier round 11: 161176 + 183887 %= 345063
+Round 11: chose new random value 214711.
+Verifier round 12: 246056 + 180920 %= 426976
+Round 12: chose new random value 303398.
+Verifier round 13: 297464 + 241413 %= 14590
+Round 13: chose new random value 332891.
+Verifier round 14: 319965 + 475519 %= 271197
+Round 14: chose new random value 191816.
+Verifier round 15: 471271 + 519179 %= 466163
+Verifier round 15: Oracle value matches at: 97320
 ***End of protocol.
-
-
-
-
-A OK
-Verifier round 0: G = 12, G/6 = 2
-Verifier round 1: 6 + 6 %= 12
-Round 1: chose new random value 97.
-Verifier round 2: 505667 + 2 %= 505669
-Round 2: chose new random value 20.

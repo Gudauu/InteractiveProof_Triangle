@@ -22,9 +22,9 @@ private:
         long long res = 1, fNv = k + k;
         for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
-                res = res * xy[i];
+                res = res * xy[i] % P;
             else
-                res = res * (1-xy[i]);
+                res = res * (1-xy[i]) % P;
         res = (res % P + P) % P;
         return int(res);
     }
@@ -139,7 +139,6 @@ public:
             res.push_back(eval_g(r));
             r.pop_back();
         }
-        IC(res);
         return res;
     }
 };
@@ -155,11 +154,10 @@ private:
         std::cout << "Verifier " << msg << "\n";
     }
     int randValue(const int& low, const int& high){
-        // std::random_device rd; // obtain a random number from hardware
-        // std::mt19937 gen(rd()); // seed the generator
-        // std::uniform_int_distribution<> distr(low, high); // define the range
-        // return distr(gen);
-        return 70000;
+        std::random_device rd; // obtain a random number from hardware
+        std::mt19937 gen(rd()); // seed the generator
+        std::uniform_int_distribution<> distr(low, high); // define the range
+        return distr(gen);
     }
     inline int LagrangeEval(const int& r_new, const int& g0, const int& g1, const int& g2){
         long res = (long(g0)*(r_new-1)*(r_new-2) >> 1)%P - (long(g1)*r_new*(r_new-2))%P + (long(g2)*r_new*(r_new-1) >> 1)%P;
@@ -172,9 +170,9 @@ private:
         long long res = 1, fNv = k + k;
         for(int i = 0; i < fNv; i++)
             if (w[i] == 1)
-                res = res * xy[i];
+                res = res * xy[i] % P;
             else
-                res = res * (1-xy[i]);
+                res = res * (1-xy[i]) % P;
         res = (res % P + P) % P;
         return int(res);
     }
@@ -309,6 +307,9 @@ public:
 
 class IP{
 private:
+    int Ng;  // size of graph (number of nodes) 
+    int k;  // length of binary representation of one node (2^k = Ng)
+    vector<vector<int>> A;
     void mexit(string message) {
         std::cout << ("***" + message);
         exit(0);
@@ -347,16 +348,11 @@ private:
     }
 
 public:
-    int Ng;  // size of graph (number of nodes) 
-    int k;  // length of binary representation of one node (2^k = Ng)
-    vector<vector<int>> A;
-    
-    
     void triangle(vector<vector<int>> A_){
         // set up
         A = A_;
-        checkA();
         setSize();
+        checkA();
 
         Prover prover = Prover(A, Ng, k);
         Verifier verifier = Verifier(A, Ng, k);
@@ -373,15 +369,27 @@ public:
         } 
     }
 
+    void createAHelper_full(vector<vector<int>>& matrix){
+        int length = matrix.size();
+        for(int i = 0;i < length - 1;i++){
+            for(int j = i + 1;j < length;j++){
+                matrix[i][j] = 1;
+                matrix[j][i] = 1;
+            }
+        }
+    }
+
 };
 
 int main(int argc, char *argv[])
 {
-    vector<vector<int>> A = vector<vector<int>>(4, vector<int>(4, 0));
+    vector<vector<int>> A = vector<vector<int>>(32, vector<int>(32, 0));
     // square, G = 0
     // A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = 1;
-    // diagonal, G = 2
-    A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = A[1][3] = A[3][1] = 1;
+    // cross, k = 2, G = 4
+    // A[0][1] = A[1][2] = A[2][3] = A[3][2] = A[2][1] = A[1][0] = A[0][3] = A[3][0] = A[1][3] = A[3][1] = A[0][2] = A[2][0]= 1;
     IP ip = IP();
+    ip.createAHelper_full(A);
+    // IC(A);
     ip.triangle(A);
 }
